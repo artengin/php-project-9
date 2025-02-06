@@ -1,0 +1,21 @@
+<?=$this->fetch('header.phtml', ["currentRoute" => $currentRoute])?>
+<main class="flex-grow-1">
+    <div class="container-lg mt-3"> 
+        <h1>Сайты</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Последняя проверка</th>
+                        <th>Код ответа</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<?=$this->fetch('footer.phtml')?>
