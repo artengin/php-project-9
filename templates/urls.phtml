@@ -13,6 +13,20 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php foreach ($urls as $url): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($url['id']) ?></td>
+                            <td>
+                                <a href="/urls/<?= htmlspecialchars($url['id']) ?>">
+                                    <?= htmlspecialchars($url['name']) ?>
+                                </a>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
