@@ -57,7 +57,7 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
         return $this->get('renderer')->render($response->withStatus(404), "404.phtml",);
     }
 
-    $urlInfo = $urlRepo->findById($id);
+    $urlInfo = $urlRepo->findById((int) $id);
 
     if (!$urlInfo) {
         return $this->get('renderer')->render($response->withStatus(404), "404.phtml",);
@@ -121,7 +121,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
     $newUrlId = $urlRepo->save($normalizedUrl);
     $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
-    $params = ['id' => $newUrlId];
+    $params = ['id' => (string) $newUrlId];
     return $response->withRedirect($router->urlFor('url', $params));
 });
 
@@ -148,7 +148,7 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($
         $this->get('flash')->addMessage('error', 'Произошла ошибка при проверке, не удалось подключиться');
     }
 
-    $params = ['id' => $urlId];
+    $params = ['id' => (string) $urlId];
     return $response->withRedirect($router->urlFor('url', $params));
 })->setName('url_check');
 
