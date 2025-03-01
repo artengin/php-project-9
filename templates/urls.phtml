@@ -22,8 +22,10 @@
                                 </a>
                             </td>
                             <td>
+                                <?= htmlspecialchars($url['data']['last_check']) ?>
                             </td>
                             <td>
+                                <?= htmlspecialchars($url['data']['status_code']) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

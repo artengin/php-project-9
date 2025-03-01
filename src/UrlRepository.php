@@ -52,7 +52,7 @@ class UrlRepository
 
     public function findAll(): array
     {
-        $sql = 'SELECT * FROM urls ORDER BY created_at DESC';
+        $sql = 'SELECT * FROM urls ORDER BY created_at';
         $stmt = $this->conn->query($sql);
         $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

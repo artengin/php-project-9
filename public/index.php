@@ -8,7 +8,10 @@ use Slim\Exception\HttpNotFoundException;
 use Dotenv\Dotenv;
 use Hexlet\Code\Connection;
 use Hexlet\Code\UrlRepository;
+use Hexlet\Code\CheckRepository;
 use Hexlet\Code\UrlValidator;
+use GuzzleHttp\Client;
+use DiDom\Document;
 
 session_start();
 
@@ -20,6 +23,7 @@ $container = new Container();
 $container->set('renderer', function () {
     return new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
 });
+
 $container->set('flash', function () {
     return new \Slim\Flash\Messages();
 });
@@ -43,8 +47,9 @@ $errorMiddleware->setErrorHandler(HttpNotFoundException::class, function ($reque
     return $this->get('renderer')->render($response->withStatus(404), "404.phtml");
 });
 
-$app->get('/urls/{id}', function ($request, $response, $args) use ($container) {
-    $urlRepo = new UrlRepository($container->get(\PDO::class));
+$app->get('/urls/{id}', function ($request, $response, $args) {
+    $urlRepo = new UrlRepository($this->get(\PDO::class));
+    $checksRepo = new CheckRepository($this->get(\PDO::class));
 
     $id = $args['id'];
 
@@ -58,23 +63,34 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($container) {
         return $this->get('renderer')->render($response->withStatus(404), "404.phtml",);
     }
 
-    $flash = $container->get('flash')->getMessages();
+    $flash = $this->get('flash')->getMessages();
     $params = [
         'url' => $urlInfo,
-        'flash' => $flash
+        'flash' => $flash,
+        'checks' => $checksRepo->getChecks($args['id']),
     ];
 
-    return $container->get('renderer')->render($response, 'url.phtml', $params);
+    return $this->get('renderer')->render($response, 'url.phtml', $params);
 })->setName('url');
 
-$app->get('/urls', function ($request, $response) use ($container) {
-    $urlRepo = new UrlRepository($container->get(\PDO::class));
+$app->get('/urls', function ($request, $response) {
+    $urlRepo = new UrlRepository($this->get(\PDO::class));
+    $checksRepo = new CheckRepository($this->get(\PDO::class));
     $urls = $urlRepo->findAll();
 
+    $urlsWithLastChecks = array_map(function ($url) use ($checksRepo) {
+        $lastCheck = $checksRepo->getLastCheck($url['id']);
+        $url['data'] = [
+            'last_check' => $lastCheck['created_at'] ?? '',
+            'status_code' => $lastCheck['status_code'] ?? ''
+        ];
+        return $url;
+    }, $urls);
+
     $params = [
-        'urls' => $urls
+        'urls' => $urlsWithLastChecks
     ];
-    return $container->get('renderer')->render($response, 'urls.phtml', $params);
+    return $this->get('renderer')->render($response, 'urls.phtml', $params);
 })->setName('urls');
 
 $app->post('/urls', function ($request, $response) use ($router) {
@@ -105,8 +121,35 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
     $newUrlId = $urlRepo->save($normalizedUrl);
     $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
-    $params = ['id' => (string) $newUrlId];
+    $params = ['id' => $newUrlId];
     return $response->withRedirect($router->urlFor('url', $params));
 });
+
+$app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($router) {
+    $urlId = (int) $args['url_id'];
+    $urlRepo = new UrlRepository($this->get(\PDO::class));
+    $checksRepo = new CheckRepository($this->get(\PDO::class));
+    $client = new Client();
+    $url = $urlRepo->findById($urlId);
+
+    try {
+        $urlName = $client->get($url['name']);
+        $statusCode = $urlName->getStatusCode();
+        $body = (string) $urlName->getBody();
+
+        $document = new Document($body);
+        $h1 = optional($document->first('h1'))->text() ?? null;
+        $title = optional($document->first('title'))->text() ?? null;
+        $descriptionTag = $document->first('meta[name=description]') ?? null;
+        $description = $descriptionTag ? $descriptionTag->getAttribute('content') : null;
+        $checksRepo->addCheck($urlId, $statusCode, $h1, $title, $description);
+        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+    } catch (\Exception $e) {
+        $this->get('flash')->addMessage('error', 'Произошла ошибка при проверке, не удалось подключиться');
+    }
+
+    $params = ['id' => $urlId];
+    return $response->withRedirect($router->urlFor('url', $params));
+})->setName('url_check');
 
 $app->run();
