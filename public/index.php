@@ -5,6 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Exception\HttpNotFoundException;
+use Slim\Views\PhpRenderer;
 use Dotenv\Dotenv;
 use Hexlet\Code\Connection;
 use Hexlet\Code\UrlRepository;
@@ -21,7 +22,9 @@ $dotenv->required(['DATABASE_URL'])->notEmpty();
 
 $container = new Container();
 $container->set('renderer', function () {
-    return new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
+    $render = new PhpRenderer(__DIR__ . '/../templates');
+    $render->setLayout('layout.phtml');
+    return $render;
 });
 
 $container->set('flash', function () {
@@ -39,12 +42,19 @@ $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $router = $app->getRouteCollector()->getRouteParser();
 
 $app->get('/', function ($request, $response) {
-    return $this->get('renderer')->render($response, "index.phtml");
+    $viewData = [
+        'title' => 'Анализатор страниц',
+        'currentRoute' => 'home'
+    ];
+    return $this->get('renderer')->render($response, "index.phtml", $viewData);
 })->setName('home');
 
 $errorMiddleware->setErrorHandler(HttpNotFoundException::class, function ($request, $exception, $displayErrorDetails) {
     $response = new \Slim\Psr7\Response();
-    return $this->get('renderer')->render($response->withStatus(404), "404.phtml");
+    $viewData = [
+        'title' => 'Страница не найдена!'
+    ];
+    return $this->get('renderer')->render($response->withStatus(404), "404.phtml", $viewData);
 });
 
 $app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
@@ -64,6 +74,7 @@ $app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
         'url' => $urlInfo,
         'flash' => $flash,
         'checks' => $checksRepo->getChecks($args['id']),
+        'title' => 'Сайт: ' . $urlInfo['name']
     ];
 
     return $this->get('renderer')->render($response, 'url.phtml', $params);
@@ -85,7 +96,9 @@ $app->get('/urls', function ($request, $response) {
     }
 
     $params = [
-        'urls' => $urlsWithLastChecks
+        'urls' => $urlsWithLastChecks,
+        'title' => 'Список сайтов',
+        'currentRoute' => 'urls'
     ];
     return $this->get('renderer')->render($response, 'urls.phtml', $params);
 })->setName('urls');
