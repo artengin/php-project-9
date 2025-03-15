@@ -47,15 +47,11 @@ $errorMiddleware->setErrorHandler(HttpNotFoundException::class, function ($reque
     return $this->get('renderer')->render($response->withStatus(404), "404.phtml");
 });
 
-$app->get('/urls/{id}', function ($request, $response, $args) {
+$app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
     $urlRepo = new UrlRepository($this->get(\PDO::class));
     $checksRepo = new CheckRepository($this->get(\PDO::class));
 
     $id = $args['id'];
-
-    if (!is_numeric($id)) {
-        return $this->get('renderer')->render($response->withStatus(404), "404.phtml",);
-    }
 
     $urlInfo = $urlRepo->findById((int) $id);
 
