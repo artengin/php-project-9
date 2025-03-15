@@ -74,14 +74,15 @@ $app->get('/urls', function ($request, $response) {
     $checksRepo = new CheckRepository($this->get(\PDO::class));
     $urls = $urlRepo->findAll();
 
-    $urlsWithLastChecks = array_map(function ($url) use ($checksRepo) {
+    $urlsWithLastChecks = [];
+    foreach ($urls as $url) {
         $lastCheck = $checksRepo->getLastCheck($url['id']);
         $url['data'] = [
             'last_check' => $lastCheck['created_at'] ?? '',
             'status_code' => $lastCheck['status_code'] ?? ''
         ];
-        return $url;
-    }, $urls);
+        $urlsWithLastChecks[] = $url;
+    }
 
     $params = [
         'urls' => $urlsWithLastChecks
