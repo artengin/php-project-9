@@ -103,7 +103,7 @@ $app->get('/urls', function ($request, $response) {
         foreach ($urlsWithLastChecks as $item) {
             $temp[$item['id']] = $item;
         }
-    
+
         foreach ($urls as $url) {
             $id = $url['id'];
             if (isset($temp[$id])) {
@@ -115,7 +115,6 @@ $app->get('/urls', function ($request, $response) {
     } else {
         $temp = $urls;
     }
-    
 
     $params = [
         'urls' => $mergedIdWithLastChecks,
