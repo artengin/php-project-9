@@ -153,11 +153,11 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($
         $body = (string) $urlName->getBody();
 
         $document = new Document($body);
-        $h1 = optional($document->first('h1'))->text() ?? null;
+        $h1 = optional($document->first('h1'))->text() ?? "";
         $h1 = mb_strlen($h1) > 255 ? mb_strimwidth($h1, 0, 252, "...") : $h1;
-        $title = optional($document->first('title'))->text() ?? null;
-        $descriptionTag = $document->first('meta[name=description]') ?? null;
-        $description = $descriptionTag ? $descriptionTag->getAttribute('content') : null;
+        $title = optional($document->first('title'))->text() ?? "";
+        $descriptionTag = $document->first('meta[name=description]') ?? "";
+        $description = $descriptionTag ? $descriptionTag->getAttribute('content') : "";
         $checksRepo->addCheck($urlId, $statusCode, $h1, $title, $description);
         $this->get('flash')->addMessage('success', 'Страница успешно проверена');
     } catch (\Exception $e) {
