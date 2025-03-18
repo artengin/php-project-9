@@ -21,10 +21,10 @@
                                 </a>
                             </td>
                             <td>
-                                <?= htmlspecialchars($url['data']['last_check']) ?>
+                                <?= htmlspecialchars($checks['created_at']) ?>
                             </td>
                             <td>
-                                <?= htmlspecialchars($url['data']['status_code']) ?>
+                                <?= htmlspecialchars($checks['status_code']) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
