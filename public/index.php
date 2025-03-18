@@ -5,6 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Exception\HttpNotFoundException;
+use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Views\PhpRenderer;
 use Dotenv\Dotenv;
 use Hexlet\Code\Connection;
@@ -55,6 +56,14 @@ $errorMiddleware->setErrorHandler(HttpNotFoundException::class, function ($reque
         'title' => 'Страница не найдена!'
     ];
     return $this->get('renderer')->render($response->withStatus(404), "404.phtml", $viewData);
+});
+
+$errorMiddleware->setErrorHandler(HttpMethodNotAllowedException::class, function ($request, $exception, $displayErrorDetails) {
+    $response = new \Slim\Psr7\Response();
+    $viewData = [
+        'title' => 'Ошибка 500!'
+    ];
+    return $this->get('renderer')->render($response->withStatus(500), "500.phtml", $viewData);
 });
 
 $app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
