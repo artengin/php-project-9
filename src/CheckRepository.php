@@ -47,16 +47,19 @@ class CheckRepository
 
     public function getLastCheck(array $urlId): ?array
     {
-        $urlIdList = implode(',', array_map('intval', $urlId));
-        $sql = "SELECT status_code, created_at 
-            FROM url_checks 
-            WHERE url_id IN ($urlIdList) 
-            ORDER BY created_at 
-            DESC 
-            LIMIT 1";
+        $urlIdList = implode(',', array_map(fn($url) => $url['id'], $urlId));
+        $sql = "SELECT url_id as id, status_code, created_at as latest_check
+                FROM url_checks
+                WHERE url_id IN ($urlIdList)
+                AND (url_id, created_at) IN (
+                    SELECT url_id, MAX(created_at)
+                    FROM url_checks
+                    WHERE url_id IN ($urlIdList)
+                    GROUP BY url_id
+                )";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: null;
         return $result;
     }
 }
