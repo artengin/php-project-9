@@ -97,17 +97,23 @@ $app->get('/urls', function ($request, $response) {
     $checksRepo = new CheckRepository($this->get(\PDO::class));
     $urls = $urlRepo->findAll();
     $urlsWithLastChecks = $checksRepo->getLastCheck($urls);
-    $resultId = array_map(
-        function ($urlArray) use ($urlsWithLastChecks) {
-            if (isset($urlsWithLastChecks[$urlArray['id']])) {
-                return array_merge($urlsWithLastChecks[$urlArray['id']], $urlArray);
-            }
-            return $urlArray;
-        },
-        $urls
-    );
+    $mergedIdWithLastChecks = [];
+    $temp = [];
+    foreach ($urlsWithLastChecks as $item) {
+        $temp[$item['id']] = $item;
+    }
+
+    foreach ($urls as $url) {
+        $id = $url['id'];
+        if (isset($temp[$id])) {
+            $mergedIdWithLastChecks[] = array_merge($url, $temp[$id]);
+        } else {
+            $mergedIdWithLastChecks[] =  $url;
+        }
+    }
+
     $params = [
-        'urls' => $resultId,
+        'urls' => $mergedIdWithLastChecks,
         'title' => 'Список сайтов',
         'currentRoute' => 'urls'
     ];

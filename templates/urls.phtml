@@ -20,12 +20,8 @@
                                     <?= htmlspecialchars($url['name']) ?>
                                 </a>
                             </td>
-                            <td><?php if(isset($url['latest_check'])) { ?>
-                                <?= htmlspecialchars($url['latest_check']) ?>
-                            <?php } ?></td>
-                            <td><?php if(isset($url['status_code'])) { ?>
-                                <?= htmlspecialchars($url['status_code']) ?>
-                            <?php } ?></td>
+                            <td><?= htmlspecialchars($url['latest_check'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($url['status_code'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
