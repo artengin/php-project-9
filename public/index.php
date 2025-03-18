@@ -99,7 +99,7 @@ $app->get('/urls', function ($request, $response) {
     $urlsWithLastChecks = $checksRepo->getLastCheck($urls);
     $resultId = array_map(
         function ($urlArray) use ($urlsWithLastChecks) {
-            if ($urlsWithLastChecks[$urlArray['id']]) {
+            if (isset($urlsWithLastChecks[$urlArray['id']])) {
                 return array_merge($urlsWithLastChecks[$urlArray['id']], $urlArray);
             }
             return $urlArray;
