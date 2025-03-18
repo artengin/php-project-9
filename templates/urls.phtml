@@ -20,12 +20,8 @@
                                     <?= htmlspecialchars($url['name']) ?>
                                 </a>
                             </td>
-                            <td>
-                                <?= htmlspecialchars($url['latest_check'] ?? "") ?>
-                            </td>
-                            <td>
-                                <?= htmlspecialchars($url['status_code'] ?? "") ?>
-                            </td>
+                            <td><?= htmlspecialchars($url['latest_check'] ?? "") ?></td>
+                            <td><?= htmlspecialchars($url['status_code'] ?? "") ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
