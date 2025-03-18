@@ -58,13 +58,16 @@ $errorMiddleware->setErrorHandler(HttpNotFoundException::class, function ($reque
     return $this->get('renderer')->render($response->withStatus(404), "404.phtml", $viewData);
 });
 
-$errorMiddleware->setErrorHandler(HttpMethodNotAllowedException::class, function ($request, $exception, $displayErrorDetails) {
-    $response = new \Slim\Psr7\Response();
-    $viewData = [
-        'title' => 'Ошибка 500!'
-    ];
-    return $this->get('renderer')->render($response->withStatus(500), "500.phtml", $viewData);
-});
+$errorMiddleware->setErrorHandler(
+    HttpMethodNotAllowedException::class,
+    function ($request, $exception, $displayErrorDetails) {
+        $response = new \Slim\Psr7\Response();
+        $viewData = [
+            'title' => 'Ошибка 500!'
+        ];
+        return $this->get('renderer')->render($response->withStatus(500), "500.phtml", $viewData);
+    }
+);
 
 $app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
     $urlRepo = new UrlRepository($this->get(\PDO::class));
