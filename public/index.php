@@ -97,24 +97,13 @@ $app->get('/urls', function ($request, $response) {
     $checksRepo = new CheckRepository($this->get(\PDO::class));
     $urls = $urlRepo->findAll();
     $urlsWithLastChecks = $checksRepo->getLastCheck($urls);
-    $mergedIdWithLastChecks = [];
-    $temp = [];
-    if (isset($urlsWithLastChecks)) {
-        foreach ($urlsWithLastChecks as $item) {
-            $temp[$item['id']] = $item;
-        }
 
-        foreach ($urls as $url) {
-            $id = $url['id'];
-            if (isset($temp[$id])) {
-                $mergedIdWithLastChecks[] = array_merge($url, $temp[$id]);
-            } else {
-                $mergedIdWithLastChecks[] =  $url;
-            }
-        }
-    } else {
-        $temp = $urls;
-    }
+    $checksCollection = collect($urlsWithLastChecks)->keyBy('id');
+    $mergedIdWithLastChecks = collect($urls)->map(function ($url) use ($checksCollection) {
+        $id = $url['id'];
+        $result = isset($checksCollection[$id]) ? array_merge($url, $checksCollection[$id]) : $url;
+        return $result;
+    })->toArray();
 
     $params = [
         'urls' => $mergedIdWithLastChecks,
