@@ -21,5 +21,3 @@ make install
 ```
 make start
 ```
-DEMO link: 
-https://php-project-9-3p28.onrender.com
